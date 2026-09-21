@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Sistem Pernapasan Manusia</title>
+<style>
+:root{
+  --blue:#55b8ed;--dark:#24415c;--green:#35b878;--red:#e87979;
+  --yellow:#ffe08a;--bg:#f3fbff;--card:#ffffff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:"Trebuchet MS",Arial,sans-serif;
+  background:linear-gradient(135deg,#dff7ff,#fff4c7,#eee5ff);
+  color:var(--dark);min-height:100vh;padding:20px;
+}
+.container{max-width:850px;margin:auto}
+.hero,.card{
+  background:rgba(255,255,255,.96);border-radius:30px;
+  padding:28px;box-shadow:0 10px 30px rgba(45,87,120,.12);
+}
+.hero{text-align:center;margin-bottom:20px}
+.mascot{font-size:64px}
+h1{font-size:clamp(28px,6vw,48px);margin:8px 0;font-weight:900}
+h2{font-size:clamp(23px,5vw,34px);line-height:1.35}
+p,li{font-size:18px;line-height:1.6}
+.badge{
+  display:inline-block;background:#e5f5ff;color:#286c99;
+  padding:7px 14px;border-radius:99px;font-weight:bold;font-size:14px
+}
+button{
+  border:0;border-radius:18px;padding:16px 22px;
+  font-size:18px;font-weight:bold;cursor:pointer;
+  transition:transform .15s,opacity .15s
+}
+button:active{transform:scale(.97)}
+button:disabled{cursor:default;opacity:1}
+.primary{background:#328fce;color:white;width:100%}
+.secondary{background:#edf5f9;color:var(--dark);border:2px solid #d1e4ef}
+.sound{background:#effaff;color:#246c96;border:2px solid #b7e1f4;font-size:14px;padding:10px 14px}
+.hidden{display:none!important}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.progress{height:14px;background:#e8eef3;border-radius:99px;overflow:hidden;margin:14px 0}
+.progress-bar{height:100%;background:var(--blue);width:16.66%;transition:width .25s}
+.question{font-size:clamp(24px,5vw,35px);line-height:1.35;font-weight:900;margin:25px 0}
+.option{
+  display:flex;align-items:center;gap:14px;text-align:left;
+  width:100%;margin:12px 0;background:white;color:var(--dark);
+  border:3px solid #e1edf3;font-size:clamp(17px,4vw,21px)
+}
+.letter{
+  display:flex;align-items:center;justify-content:center;flex:0 0 42px;
+  width:42px;height:42px;border-radius:13px;background:#e6f5ff;
+  color:#246c96;font-weight:900
+}
+.option.correct{background:#e5faed;border-color:var(--green);color:#175d3c}
+.option.wrong{background:#fff0f0;border-color:var(--red);color:#8b3939}
+.feedback{margin:20px 0;padding:18px;border-radius:20px;font-size:18px;line-height:1.6;font-weight:bold}
+.good{background:#e5faed;color:#175d3c}
+.bad{background:#fff0f0;color:#8b3939}
+.score{font-size:70px;color:#2e91cc;font-weight:900;text-align:center}
+.summary{border-top:1px solid #dce8ee;padding:13px 0;display:flex;justify-content:space-between;gap:10px;font-size:17px}
+.pill{border-radius:99px;padding:5px 10px;font-size:13px;font-weight:bold;white-space:nowrap}
+.yes{background:#d9f6e5;color:#196b42}.no{background:#ffebeb;color:#a04040}
+.small{font-size:14px;color:#6d8290}
+.review-item{padding:15px 0;border-bottom:1px solid #dce8ee}
+ul{padding-left:25px}
+@media(max-width:520px){body{padding:10px}.hero,.card{padding:20px;border-radius:22px}p,li{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <section class="hero" id="intro">
+    <div class="mascot">🫁🌈⭐</div>
+    <span class="badge">KUIS INTERAKTIF UNTUK SISWA SD</span>
+    <h1>Petualangan Sistem Pernapasan!</h1>
+    <p>Ayo kenali organ pernapasan manusia sambil bermain dan belajar.</p>
+    <ul style="text-align:left">
+      <li>🌬️ 6 soal pilihan ganda</li>
+      <li>🔊 Suara untuk soal dan umpan balik</li>
+      <li>💬 Penjelasan setelah menjawab</li>
+      <li>🏆 Skor akhir dan pembahasan</li>
+    </ul>
+    <button class="primary" id="startBtn">🚀 Mulai Kuis</button>
+  </section>
+
+  <section class="card hidden" id="quiz">
+    <div class="topline">
+      <span class="badge" id="topic">Sistem Pernapasan</span>
+      <strong id="counter">Soal 1 dari 6</strong>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="topline">
+      <span id="scoreLabel">⭐ Skor: 0</span>
+      <button class="sound" id="readQuestion">🔊 Bacakan Soal</button>
+    </div>
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+    <div class="feedback hidden" id="feedback" aria-live="polite"></div>
+    <button class="primary hidden" id="nextBtn">Soal Berikutnya ➜</button>
+    <p class="small">💡 Bacalah soal dengan teliti sebelum memilih jawaban.</p>
+  </section>
+
+  <section class="card hidden" id="result">
+    <div class="hero" style="box-shadow:none;margin:0;padding:5px">
+      <div class="mascot" id="resultEmoji">🏆</div>
+      <h2 id="resultTitle">Kuis Selesai!</h2>
+      <p id="resultSubtitle">Hebat, kamu sudah belajar.</p>
+      <div class="score" id="finalScore">0 / 6</div>
+      <p id="resultMessage"></p>
+    </div>
+    <h2>📋 Hasil Jawaban</h2>
+    <div id="summary"></div>
+    <button class="primary" id="restartBtn">🔄 Main Lagi</button>
+    <button class="secondary" id="reviewBtn" style="width:100%;margin-top:12px">📖 Lihat Pembahasan</button>
+    <div id="review" class="hidden"></div>
+  </section>
+</div>
+
+<script>
+const questions = [
+  {
+    topic:"Sistem Pernapasan",
+    question:"Apa tujuan utama manusia melakukan pernapasan?",
+    options:["Mendapatkan oksigen untuk tubuh","Membuat tulang menjadi kuat","Mencerna makanan di lambung","Menggerakkan rambut"],
+    answer:0,
+    explanation:"Manusia bernapas untuk mendapatkan oksigen. Oksigen digunakan tubuh dalam proses menghasilkan energi."
+  },
+  {
+    topic:"Saluran Pernapasan Atas",
+    question:"Organ yang menjadi tempat masuknya udara dari luar tubuh adalah ...",
+    options:["Lambung","Hidung","Jantung","Usus"],
+    answer:1,
+    explanation:"Hidung merupakan jalan masuk udara. Hidung juga membantu menyaring, menghangatkan, dan melembapkan udara."
+  },
+  {
+    topic:"Saluran Pernapasan Atas",
+    question:"Rambut hidung dan lendir berfungsi untuk ...",
+    options:["Memompa darah","Menghancurkan tulang","Menyaring debu dan kotoran","Mencerna makanan"],
+    answer:2,
+    explanation:"Rambut hidung dan lendir membantu menangkap debu serta partikel yang terbawa udara."
+  },
+  {
+    topic:"Saluran Pernapasan",
+    question:"Setelah melewati hidung atau rongga hidung, udara menuju ...",
+    options:["Faring atau tekak","Lambung","Usus halus","Ginjal"],
+    answer:0,
+    explanation:"Faring atau tekak terletak di belakang rongga hidung dan mulut. Udara melewati faring menuju laring."
+  },
+  {
+    topic:"Organ Pernapasan",
+    question:"Bagian paru-paru yang menjadi tempat pertukaran oksigen dan karbon dioksida adalah ...",
+    options:["Hidung","Trakea","Alveolus","Kerongkongan"],
+    answer:2,
+    explanation:"Alveolus adalah kantung udara kecil di paru-paru. Di bagian ini terjadi pertukaran oksigen dan karbon dioksida dengan darah."
+  },
+  {
+    topic:"Menjaga Kesehatan Pernapasan",
+    question:"Tindakan yang membantu menjaga kesehatan organ pernapasan adalah ...",
+    options:["Menghirup asap rokok","Berolahraga secara teratur","Membakar sampah dekat rumah","Tidak membersihkan lingkungan"],
+    answer:1,
+    explanation:"Berolahraga sesuai kemampuan, menghindari asap rokok, dan menjaga kebersihan lingkungan membantu menjaga kesehatan pernapasan."
+  }
+];
+
+let current=0, score=0, answers=[], locked=false;
+const $ = id => document.getElementById(id);
+
+function speak(text){
+  if(!("speechSynthesis" in window)){
+    alert("Fitur suara tidak didukung oleh browser ini.");
+    return;
+  }
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang="id-ID"; utterance.rate=.88; utterance.pitch=1.1;
+  speechSynthesis.speak(utterance);
+}
+
+function tone(type){
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    const ctx=new AudioCtx();
+    const notes=type==="correct"?[523,659,784]:type==="wrong"?[220,185]:[392,523];
+    notes.forEach((frequency,i)=>{
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      const start=ctx.currentTime+i*.12;
+      osc.type="sine";osc.frequency.value=frequency;
+      gain.gain.setValueAtTime(.0001,start);
+      gain.gain.exponentialRampToValueAtTime(.12,start+.025);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+.16);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(start);osc.stop(start+.18);
+    });
+  }catch(e){}
+}
+
+function renderQuestion(){
+  locked=false;
+  const item=questions[current];
+  $("topic").textContent=item.topic;
+  $("counter").textContent=`Soal ${current+1} dari ${questions.length}`;
+  $("scoreLabel").textContent=`⭐ Skor: ${score}`;
+  $("progressBar").style.width=((current+1)/questions.length*100)+"%";
+  $("question").textContent=item.question;
+  $("feedback").className="feedback hidden";
+  $("nextBtn").classList.add("hidden");
+  $("options").innerHTML="";
+  item.options.forEach((option,i)=>{
+    const btn=document.createElement("button");
+    btn.className="option";
+    btn.type="button";
+    const letter=document.createElement("span");
+    letter.className="letter";
+    letter.textContent=String.fromCharCode(65+i);
+    const text=document.createElement("span");
+    text.textContent=option;
+    btn.append(letter,text);
+    btn.addEventListener("click",()=>choose(i));
+    $("options").appendChild(btn);
+  });
+}
+
+function choose(choice){
+  if(locked)return;
+  locked=true;
+  const item=questions[current];
+  const correct=choice===item.answer;
+  answers[current]=choice;
+  if(correct)score++;
+  $("scoreLabel").textContent=`⭐ Skor: ${score}`;
+  [...$("options").children].forEach((btn,i)=>{
+    btn.disabled=true;
+    if(i===item.answer)btn.classList.add("correct");
+    if(i===choice&&!correct)btn.classList.add("wrong");
+  });
+  const feedback=$("feedback");
+  feedback.className="feedback "+(correct?"good":"bad");
+  feedback.innerHTML=correct
+    ? `<strong>🎉 Hebat! Jawabanmu benar!</strong><br>${item.explanation}`
+    : `<strong>🌱 Belum tepat. Tetap semangat!</strong><br>Jawaban yang benar: <strong>${item.options[item.answer]}</strong>.<br>${item.explanation}`;
+  tone(correct?"correct":"wrong");
+  $("nextBtn").textContent=current===questions.length-1?"🏆 Lihat Hasil":"Soal Berikutnya ➜";
+  $("nextBtn").classList.remove("hidden");
+}
+
+function finish(){
+  $("quiz").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  const percent=score/questions.length*100;
+  $("finalScore").textContent=`${score} / ${questions.length}`;
+  $("resultEmoji").textContent=percent===100?"🏆":percent>=50?"🌟":"🌱";
+  $("resultTitle").textContent=percent===100?"Luar Biasa!":percent>=50?"Hebat, Terus Belajar!":"Tetap Semangat!";
+  $("resultMessage").textContent=percent===100
+    ?"Semua jawaban benar. Kamu sangat teliti!"
+    :percent>=50
+    ?"Kamu sudah memahami sebagian materi. Pelajari kembali bagian yang belum tepat."
+    :"Tidak apa-apa! Belajar sedikit demi sedikit membuatmu semakin pintar.";
+  $("summary").innerHTML="";
+  questions.forEach((q,i)=>{
+    const row=document.createElement("div");row.className="summary";
+    const left=document.createElement("span");left.textContent="Soal "+(i+1);
+    const right=document.createElement("span");
+    const ok=answers[i]===q.answer;
+    right.className="pill "+(ok?"yes":"no");right.textContent=ok?"✓ Benar":"✗ Belum tepat";
+    row.append(left,right);$("summary").appendChild(row);
+  });
+}
+
+function startQuiz(){
+  current=0;score=0;answers=[];
+  $("intro").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("quiz").classList.remove("hidden");
+  renderQuestion();tone("start");
+}
+
+$("startBtn").addEventListener("click",startQuiz);
+$("readQuestion").addEventListener("click",()=>{
+  const q=questions[current];
+  speak("Soal nomor "+(current+1)+". "+q.question+". "+q.options.map((o,i)=>"Pilihan "+String.fromCharCode(65+i)+", "+o).join(". "));
+});
+$("nextBtn").addEventListener("click",()=>{
+  if(!locked)return;
+  if(current===questions.length-1)finish();
+  else{current++;renderQuestion();}
+});
+$("restartBtn").addEventListener("click",startQuiz);
+$("reviewBtn").addEventListener("click",()=>{
+  const review=$("review");
+  review.classList.toggle("hidden");
+  if(review.classList.contains("hidden"))return;
+  review.innerHTML="<h2>📚 Pembahasan Lengkap</h2>";
+  questions.forEach((q,i)=>{
+    const div=document.createElement("div");div.className="review-item";
+    const h=document.createElement("h3");h.textContent=(i+1)+". "+q.question;
+    const p=document.createElement("p");p.innerHTML="<strong>Jawaban:</strong> "+q.options[q.answer]+". "+q.explanation;
+    div.append(h,p);review.appendChild(div);
+  });
+});
+</script>
+</body>
+</html>
